@@ -1,7 +1,7 @@
 # Copyright 1999-2000 Gentoo Technologies, Inc.
 # Distributed under the terms of the GNU General Public License, v2 or later
 # Author Daniel Robbins <drobbins@gentoo.org>
-# $Header: /var/cvsroot/gentoo-x86/sys-devel/perl/perl-5.6.1.ebuild,v 1.6 2001/06/17 12:51:07 achim Exp $
+# $Header: /var/cvsroot/gentoo-x86/sys-devel/perl/perl-5.6.1-r1.ebuild,v 1.1 2001/06/27 02:14:40 achim Exp $
 
 
 A=${P}.tar.gz
@@ -70,6 +70,8 @@ EOF
     sed -e "s/optimize='-O2'/optimize=\'${CFLAGS}\'/" config.sh.orig > config.sh
     #THIS IS USED LATER:
     export PARCH=`grep myarchname config.sh | cut -f2 -d"'"`
+    cp makefile makefile.orig
+    sed -e "s:^0::" makefile.orig > makefile
     try make
     # Parallell make failes
     make test
