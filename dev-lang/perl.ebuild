@@ -1,6 +1,6 @@
 # Copyright 1999-2004 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-lang/perl/perl-5.8.6.ebuild,v 1.2 2004/12/01 22:50:49 rac Exp $
+# $Header: /var/cvsroot/gentoo-x86/dev-lang/perl/perl-5.8.6-r1.ebuild,v 1.1 2004/12/04 20:14:30 rac Exp $
 
 inherit eutils flag-o-matic gcc
 
@@ -111,6 +111,15 @@ src_unpack() {
 	# sparc64.
 
 	#epatch ${FILESDIR}/${P}-nonblock.patch
+
+	# since we build in non-world-writeable portage directories, none
+	# of the .t sections of the original version of this patch matter
+	# much.  the PPPort section is apparently obsolete, because i see
+	# no /tmp in there now.  ditto on perlbug.SH, which has secure
+	# tempfile handling if resources are present.  originally from bug
+	# 66360.
+
+	epatch ${FILESDIR}/${P}-tempfiles.patch
 }
 
 src_configure() {
