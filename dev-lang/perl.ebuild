@@ -1,6 +1,6 @@
 # Copyright 1999-2003 Gentoo Technologies, Inc.
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-lang/perl/perl-5.8.1-r1.ebuild,v 1.1 2003/09/29 22:19:04 rac Exp $
+# $Header: /var/cvsroot/gentoo-x86/dev-lang/perl/perl-5.8.1-r2.ebuild,v 1.1 2003/10/02 21:18:08 rac Exp $
 
 inherit eutils flag-o-matic
 
@@ -74,6 +74,13 @@ pkg_setup() {
 src_unpack() {
 
 	unpack ${A}
+
+	# Get -lpthread linked before -lc.  This is needed
+	# when using glibc >= 2.3, or else runtime signal
+	# handling breaks.  Fixes bug #14380.
+	# <rac@gentoo.org> (14 Feb 2003)
+	# reinstated to try to avoid sdl segfaults 03.10.02
+	cd ${S}; epatch ${FILESDIR}/${P}-prelink-lpthread.patch
 
 	# Patch perldoc to not abort when it attempts to search
 	# nonexistent directories; fixes bug #16589.
