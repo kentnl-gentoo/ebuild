@@ -1,6 +1,6 @@
 # Copyright 1999-2003 Gentoo Technologies, Inc.
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-lang/perl/perl-5.8.0-r11.ebuild,v 1.3 2003/06/18 20:28:51 vapier Exp $
+# $Header: /var/cvsroot/gentoo-x86/dev-lang/perl/perl-5.8.0-r12.ebuild,v 1.1 2003/06/25 07:42:06 rac Exp $
 
 inherit eutils flag-o-matic 
 
@@ -25,7 +25,7 @@ HOMEPAGE="http://www.perl.org/"
 SLOT="0"
 LIBPERL="libperl.so.${PERLSLOT}.${SHORT_PV}"
 LICENSE="Artistic GPL-2"
-KEYWORDS="~x86 ~sparc ~ppc ~alpha ~mips ~hppa"
+KEYWORDS="~x86 ~amd64 ~sparc ~ppc ~alpha ~mips ~hppa"
 IUSE="berkdb doc gdbm threads"
 
 DEPEND="sys-apps/groff
@@ -100,6 +100,12 @@ src_unpack() {
 	einfo "Replacing core Safe.pm with newer version ${SAFE_VERSION}"
 	chmod +w ${S}/ext/Opcode/Safe.pm
 	cp ${WORKDIR}/Safe-${SAFE_VERSION}/Safe.pm ${S}/ext/Opcode/
+
+	# this lays the groundwork for solving the issue of what happens
+	# when people (or ebuilds) install different versiosn of modules
+	# that are in the core, by rearranging the @INC directory to look
+	# site -> vendor -> core.
+	cd ${S}; epatch ${FILESDIR}/${P}-reorder-INC.patch
 }
 
 src_compile() {
