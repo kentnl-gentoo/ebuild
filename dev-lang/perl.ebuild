@@ -1,20 +1,17 @@
 # Copyright 1999-2004 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-lang/perl/perl-5.8.4-r1.ebuild,v 1.2 2004/08/03 05:25:36 rac Exp $
+# $Header: /var/cvsroot/gentoo-x86/dev-lang/perl/perl-5.8.5.ebuild,v 1.1 2004/08/07 06:41:44 rac Exp $
 
 inherit eutils flag-o-matic gcc
 
 # The slot of this binary compat version of libperl.so
 PERLSLOT="1"
 
-SHORT_PV="`echo ${PV} | cut -d. -f1,2`"
+SHORT_PV="${PV%.*}"
+MY_P="perl-${PV/_rc/-RC}"
 DESCRIPTION="Larry Wall's Practical Extraction and Reporting Language"
-SAFE_VERSION="2.09"
-MY_P="perl-`echo $PV | sed 's/_rc/-RC/'`"
 S="${WORKDIR}/${MY_P}"
 SRC_URI="ftp://ftp.perl.org/pub/CPAN/src/${MY_P}.tar.gz"
-#ftp://ftp.perl.org/pub/CPAN/modules/by-module/DB_File/DB_File-${DB_FILE_VERSION}.tar.gz
-#ftp://ftp.perl.org/pub/CPAN/modules/by-module/Safe/Safe-${SAFE_VERSION}.tar.gz"
 HOMEPAGE="http://www.perl.org/"
 LIBPERL="libperl.so.${PERLSLOT}.${SHORT_PV}"
 LICENSE="Artistic GPL-2"
@@ -100,9 +97,6 @@ src_unpack() {
 	# /bin/ksh really is executable. Should fix bug 42665.
 	# rac 2004.06.09
 	cd ${S}; epatch ${FILESDIR}/${P}-noksh.patch
-
-	# see bug 52660
-	cd ${S}; epatch ${FILESDIR}/${P}-NDBM-GDBM-compat.patch
 
 	# uclibc support
 	epatch ${FILESDIR}/perl-5.8.2-uclibc.patch
