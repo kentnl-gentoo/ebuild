@@ -1,6 +1,6 @@
 # Copyright 1999-2002 Gentoo Technologies, Inc.
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/sys-devel/perl/perl-5.8.0-r5.ebuild,v 1.1 2002/12/17 07:34:27 lostlogic Exp $
+# $Header: /var/cvsroot/gentoo-x86/sys-devel/perl/perl-5.8.0-r6.ebuild,v 1.1 2002/12/17 16:29:18 mcummings Exp $
 
 IUSE="berkdb gdbm"
 
@@ -38,13 +38,13 @@ pkg_setup() {
 src_compile() {
 	export LC_ALL=C
     local myconf
+	myarch="${CHOST%%-*}-linux"
 	if [ "`use threads`" ]
 	then
 		einfo "using threads"
-		mythreading="-multi"
 		myconf="-Dusethreads ${myconf}"
+		myarch="${CHOST%%-*}-linux-thread-multi"
 	fi
-	myarch="${CHOST%%-*}-linux-thread"
 
 	if [ "`use gdbm`" ]
 	then
@@ -195,8 +195,8 @@ EOF
 
 # This removes ${D} from Config.pm
 
-	dosed /usr/lib/perl5/${PV}/${myarch}${mythreading}/Config.pm
-	dosed /usr/lib/perl5/${PV}/${myarch}${mythreading}/.packlist
+	dosed /usr/lib/perl5/${PV}/${myarch}/Config.pm
+	dosed /usr/lib/perl5/${PV}/${myarch}/.packlist
 
 	 
 
