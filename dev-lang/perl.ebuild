@@ -1,6 +1,6 @@
 # Copyright 1999-2003 Gentoo Technologies, Inc.
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-lang/perl/perl-5.8.1.ebuild,v 1.1 2003/09/27 23:16:37 rac Exp $
+# $Header: /var/cvsroot/gentoo-x86/dev-lang/perl/perl-5.8.1-r1.ebuild,v 1.1 2003/09/29 22:19:04 rac Exp $
 
 inherit eutils flag-o-matic
 
@@ -142,25 +142,6 @@ src_compile() {
 
 	[ "${ARCH}" = "hppa" ] && append-flags -fPIC
 
-
-cat > config.over <<EOF
-installprefix=${D}/usr
-installarchlib=\`echo \$installarchlib | sed "s!\$prefix!\$installprefix!"\`
-installbin=\`echo \$installbin | sed "s!\$prefix!\$installprefix!"\`
-installman1dir=\`echo \$installman1dir | sed "s!\$prefix!\$installprefix!"\`
-installman3dir=\`echo \$installman3dir | sed "s!\$prefix!\$installprefix!"\`
-installman1dir=\`echo \$installman1dir | sed "s!/share/share/!/share/!"\`
-installman3dir=\`echo \$installman3dir | sed "s!/share/share/!/share/!"\`
-installman1dir=\`echo \$installman1dir | sed "s!/usr/man/!/usr/share/man/!"\`
-installman3dir=\`echo \$installman3dir | sed "s!/usr/man/!/usr/share/man/!"\`
-man1ext=1
-man3ext=3pm
-installprivlib=\`echo \$installprivlib | sed "s!\$prefix!\$installprefix!"\`
-installscript=\`echo \$installscript | sed "s!\$prefix!\$installprefix!"\`
-installsitelib=\`echo \$installsitelib | sed "s!\$prefix!\$installprefix!"\`
-installsitearch=\`echo \$installsitearch | sed "s!\$prefix!\$installprefix!"\`
-EOF
-	sleep 10
 	sh Configure -des \
 		-Darchname="${myarch}" \
 		-Dcc="${CC:-gcc}" \
@@ -233,8 +214,7 @@ EOF
 	fperms 0755 /usr/bin/xsubpp
 
 	./perl installman \
-		--man1dir="${D}/usr/share/man/man1" --man1ext='1' \
-		--man3dir="${D}/usr/share/man/man3" --man3ext='3'
+		--destdir="${D}" --man1ext='1' --man3ext='3'
 
 	# This removes ${D} from Config.pm and .packlist
 	for i in `find ${D} -iname "Config.pm"` `find ${D} -iname ".packlist"`;do
