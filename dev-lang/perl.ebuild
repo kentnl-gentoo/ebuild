@@ -1,6 +1,6 @@
 # Copyright 1999-2004 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-lang/perl/perl-5.8.5-r1.ebuild,v 1.2 2004/11/14 01:00:27 rac Exp $
+# $Header: /var/cvsroot/gentoo-x86/dev-lang/perl/perl-5.8.6.ebuild,v 1.1 2004/11/30 21:09:19 rac Exp $
 
 inherit eutils flag-o-matic gcc
 
@@ -11,7 +11,7 @@ SHORT_PV="${PV%.*}"
 MY_P="perl-${PV/_rc/-RC}"
 DESCRIPTION="Larry Wall's Practical Extraction and Reporting Language"
 S="${WORKDIR}/${MY_P}"
-SRC_URI="ftp://ftp.perl.org/pub/CPAN/src/${MY_P}.tar.gz"
+SRC_URI="ftp://ftp.perl.org/pub/CPAN/src/${MY_P}.tar.bz2"
 HOMEPAGE="http://www.perl.org/"
 LIBPERL="libperl.so.${PERLSLOT}.${SHORT_PV}"
 
@@ -19,15 +19,15 @@ LICENSE="Artistic GPL-2"
 SLOT="0"
 KEYWORDS="~x86 ~ppc ~sparc ~mips ~alpha ~arm ~hppa ~amd64 ~ia64 ~ppc64 ~s390 ~sh"
 IUSE="berkdb debug doc gdbm ithreads perlsuid uclibc"
-PERL_OLDVERSEN="5.8.2 5.8.4"
+PERL_OLDVERSEN="5.8.2 5.8.4 5.8.5"
 
 DEPEND="!uclibc? ( sys-apps/groff )
 	berkdb? ( sys-libs/db )
 	gdbm? ( >=sys-libs/gdbm-1.8.3 )
 	>=sys-apps/portage-2.0.48-r4
 	>=sys-devel/libperl-${PV}
-	!<dev-perl/ExtUtils-MakeMaker-6.17
-	!<dev-perl/File-Spec-0.84-r1
+	!<dev-perl/ExtUtils-MakeMaker-6.21
+	!<dev-perl/File-Spec-0.87
 	!<dev-perl/Test-Simple-0.47-r1"
 RDEPEND=">=sys-devel/libperl-${PV}
 	berkdb? ( sys-libs/db )
@@ -110,7 +110,7 @@ src_unpack() {
 	# code in IO.xs that checks for this sort of thing dies in LDAP on
 	# sparc64.
 
-	epatch ${FILESDIR}/${P}-nonblock.patch
+	#epatch ${FILESDIR}/${P}-nonblock.patch
 }
 
 src_configure() {
