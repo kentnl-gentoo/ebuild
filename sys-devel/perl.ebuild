@@ -1,19 +1,21 @@
 # Copyright 1999-2000 Gentoo Technologies, Inc.
 # Distributed under the terms of the GNU General Public License, v2 or later
 # Author Daniel Robbins <drobbins@gentoo.org>
-# $Header: /var/cvsroot/gentoo-x86/sys-devel/perl/perl-5.6.0-r5.ebuild,v 1.1 2001/01/15 22:52:38 achim Exp $
+# $Header: /var/cvsroot/gentoo-x86/sys-devel/perl/perl-5.6.0-r6.ebuild,v 1.1 2001/02/07 16:05:19 achim Exp $
 
-P=perl-5.6.0
+
 A=${P}.tar.gz
 S=${WORKDIR}/perl-5.6.0
 DESCRIPTION="Larry Wall's Practical Extraction and Reporting Language"
 SRC_URI="ftp://ftp.perl.org/pub/perl/CPAN/src/${A}"
 HOMEPAGE="http://www.perl.org"
-DEPEND=">=sys-libs/db-3.1.17
-	>=sys-libs/gdbm-1.8.0"
 
-src_compile() {   
-                        
+DEPEND="virtual/glibc
+        berkdb? ( >=sys-libs/db-3.1.17 )
+	gdbm?   ( >=sys-libs/gdbm-1.8.0 )"
+
+src_compile() {
+
 # this is gross -- from Christian Gafton, Red Hat
 cat > config.over <<EOF
 installprefix=${D}/usr
@@ -29,9 +31,17 @@ installsitelib=\`echo \$installsitelib | sed "s!\$prefix!\$installprefix!"\`
 installsitearch=\`echo \$installsitearch | sed "s!\$prefix!\$installprefix!"\`
 EOF
 
-
+    local myconf
+    if [ "`use gdbm`" ]
+    then
+      myconf="-Di_gdbm"
+    fi
+    if [ "`use berkdb`" ]
+    then
+      myconf="${myconf} -Di_db"
+    fi
     sh Configure -des -Dprefix=/usr -Dd_dosuid \
-	-Dd_semctl_semun -Di_db -Di_gdbm -Duselargefiles \
+	-Dd_semctl_semun ${myconf} -Duselargefiles \
 	-Darchname=${CHOST%%-*}-linux
 	#-Dusethreads -Duse505threads \
 
@@ -40,15 +50,15 @@ EOF
     sed -e "s/optimize='-O2'/optimize=\'${CFLAGS}\'/" config.sh.orig > config.sh
     #THIS IS USED LATER:
     export PARCH=`grep myarchname config.sh | cut -f2 -d"'"`
-    try make 
+    try make
     # Parallell make failes
     make test
 }
 
-src_install() {                               
+src_install() {
     try make install
-    install -m 755 utils/pl2pm $D/usr/bin/pl2pm
-export D
+    install -m 755 utils/pl2pm ${D}/usr/bin/pl2pm
+
 # Generate *.ph files with a trick. Is this sick or what?
 # Yes it is, and thank you Christian for getting sick just so we can
 # run perl :)
@@ -76,34 +86,26 @@ fix-config: \$(PHDIR)/Config.pm
 
 EOF
 
-#MainDir=$(pwd)
-#cd modules
-#for module in * ; do 
-#    eval $($MainDir/perl '-V:installarchlib')
-#    mkdir -p $D/$installarchlib
-#    try make -C $module install PREFIX=$D/usr \
-#        INSTALLMAN3DIR=$D/usr/man/man3
-#done
-#cd $MainDir
-
-
 #man pages
-    
-    ./perl installman --man1dir=${D}/usr/man/man1 --man1ext=1 --man3dir=${D}/usr/man/man3 --man3ext=3
+
+    ./perl installman --man1dir=${D}/usr/share/man/man1 --man1ext=1 --man3dir=${D}/usr/share/man/man3 --man3ext=3
 
 
 # This removes ${D} from Config.pm
-  dosed /usr/lib/perl5/5.6.0/${CHOST%%-*}-linux/Config.pm 
-  dosed /usr/lib/perl5/5.6.0/${CHOST%%-*}-linux/.packlist 
+
+  dosed /usr/lib/perl5/5.6.0/${CHOST%%-*}-linux/Config.pm
+  dosed /usr/lib/perl5/5.6.0/${CHOST%%-*}-linux/.packlist
 
 # DOCUMENTATION
 
     dodoc Changes* Artistic Copying README Todo* AUTHORS
 
 # HTML Documentation
-    dodir /usr/doc/${PF}/html
-    ./perl installhtml --recurse --htmldir=${D}/usr/doc/${PF}/html
+
+    dodir /usr/share/doc/${PF}/html
+    ./perl installhtml --recurse --htmldir=${D}/usr/share/doc/${PF}/html
     prepalldocs
+
 }
 
 
