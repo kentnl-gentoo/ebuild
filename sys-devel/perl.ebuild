@@ -1,6 +1,6 @@
 # Copyright 1999-2003 Gentoo Technologies, Inc.
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/sys-devel/perl/perl-5.6.1-r10.ebuild,v 1.11 2003/02/13 16:34:14 vapier Exp $
+# $Header: /var/cvsroot/gentoo-x86/sys-devel/perl/perl-5.6.1-r11.ebuild,v 1.1 2003/02/14 23:16:11 gerk Exp $
 
 IUSE="berkdb gdbm"
 
@@ -11,7 +11,7 @@ HOMEPAGE="http://www.perl.org"
 
 LICENSE="Artistic GPL-2"
 SLOT="0"
-KEYWORDS="x86 ppc sparc alpha mips hppa"
+KEYWORDS="~x86 ~ppc ~sparc ~alpha ~mips ~hppa"
 
 RDEPEND="gdbm? ( >=sys-libs/gdbm-1.8.0 )
 	>=sys-libs/db-3.2.3h-r3
@@ -55,6 +55,10 @@ src_compile() {
 		myconf="${myconf} -Ui_db -Ui_ndbm"
     fi
 
+	# put in built-in removal patch
+	patch -p1 < ${FILESDIR}/${PV}-builtin-fixup.diff || die 
+	patch -p0 < ${FILESDIR}/${PV}-op-test-fix.diff || die
+
 	# configure for libperl.so
     sh Configure -des \
 		-Darchname=${CHOST%%-*}-linux \
@@ -84,11 +88,7 @@ src_compile() {
 	    -e 's#^all: $(FIRSTMAKEFILE) #all: README #' \
 		Makefile_orig > Makefile
     export PARCH=`grep myarchname config.sh | cut -f2 -d"'"`
-	# fixes a bug in the make/testing on new systems
-	mv makefile makefile_orig
-	mv x2p/makefile x2p/makefile_orig
-		  egrep -v "(<built-in>|<command line>)" makefile_orig >makefile
-		  egrep -v "(<built-in>|<command line>)" x2p/makefile_orig >x2p/makefile
+
 	make -f Makefile depend || die
 	make -f Makefile libperl.so || die
 	mv libperl.so ${WORKDIR}
@@ -98,6 +98,10 @@ src_compile() {
 	rm -rf ${S}
 	unpack ${A}
 	cd ${S}
+
+	# put in built-in removal patch
+	patch -p1 < ${FILESDIR}/${PV}-builtin-fixup.diff || die 
+	patch -p0 < ${FILESDIR}/${PV}-op-test-fix.diff || die
 	
 	# configure for libperl.a
 # this is gross -- from Christian Gafton, Red Hat
@@ -153,24 +157,14 @@ EOF
 	sed -e 's#^all: $(FIRSTMAKEFILE) #all: README #' \
 		Makefile_orig > Makefile
     
-    #for some reason, this rm -f doesn't seem to actually do anything. So we explicitly use "Makefile"
-    #(rather than the default "makefile") in all make commands below.
-    #rm -f makefile x2p/makefile
-	mv makefile makefile_orig
-	mv x2p/makefile x2p/makefile_orig
-		egrep -v "(<built-in>|<command line>)" makefile_orig >makefile
-		egrep -v "(<built-in>|<command line>)" x2p/makefile_orig >x2p/makefile
-    #make -f Makefile depend || die
-    #make -f Makefile || die
     make || die
-	cp ${O}/files/stat.t ./t/op/
+
     # Parallel make fails
 	# dont use the || die since some tests fail on bootstrap
 	if [ `expr "$PARCH" ":" "sparc"` -gt 4 ]; then
 		echo "Skipping tests on this platform"
 	else
-	    egrep -v "(<built-in>|<command line>)" x2p/makefile_orig >x2p/makefile
-    	make -f Makefile test 
+	    make test 
 	fi
 }
 
