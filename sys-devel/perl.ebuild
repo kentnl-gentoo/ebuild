@@ -1,7 +1,7 @@
 # Copyright 1999-2000 Gentoo Technologies, Inc.
 # Distributed under the terms of the GNU General Public License, v2 or later
 # Author Daniel Robbins <drobbins@gentoo.org>
-# $Header: /var/cvsroot/gentoo-x86/sys-devel/perl/perl-5.6.0-r2.ebuild,v 1.1 2000/11/05 19:02:55 achim Exp $
+# $Header: /var/cvsroot/gentoo-x86/sys-devel/perl/perl-5.6.0-r3.ebuild,v 1.1 2000/11/11 13:19:39 achim Exp $
 
 P=perl-5.6.0
 A=${P}.tar.gz
@@ -27,14 +27,10 @@ installsitelib=\`echo \$installsitelib | sed "s!\$prefix!\$installprefix!"\`
 installsitearch=\`echo \$installsitearch | sed "s!\$prefix!\$installprefix!"\`
 EOF
 
-#    cp Configure Configure.orig
-#    sed -e "12339d" Configure.orig > Configure
-#    sh Configure -d
 
     sh Configure -des -Dprefix=/usr -Dd_dosuid \
-	-Dd_semctl_semun -Di_db -Di_gdbm \
-	-Dusethreads -Duse505threads
-	-Dman3dir=/usr/man/man3
+	-Dd_semctl_semun -Di_db -Di_gdbm -Uuselargefiles
+	#-Dusethreads -Duse505threads \
 
     #Optimize ;)
     cp config.sh config.sh.orig
@@ -93,8 +89,8 @@ EOF
 
 
 # This removes ${D} from Config.pm
-  dosed /usr/lib/perl5/5.6.0/i686-linux-thread-multi/Config.pm 
-  dosed /usr/lib/perl5/5.6.0/i686-linux-thread-multi/.packlist 
+  dosed /usr/lib/perl5/5.6.0/i686-linux/Config.pm 
+  dosed /usr/lib/perl5/5.6.0/i686-linux/.packlist 
 
 # DOCUMENTATION
 
