@@ -1,6 +1,6 @@
 # Copyright 1999-2002 Gentoo Technologies, Inc.
 # Distributed under the terms of the GNU General Public License, v2 or later
-# /space/gentoo/cvsroot/gentoo-x86/sys-devel/perl/perl-5.8.0-r1.ebuild,v 1.3 2002/04/29 20:53:42 sandymac Exp
+# /space/gentoo/cvsroot/gentoo-x86/sys-devel/perl/perl-5.6.1-r3.ebuild,v 1.3 2002/04/29 20:53:42 sandymac Exp
 
 S=${WORKDIR}/${P}
 DESCRIPTION="Larry Wall's Practical Extraction and Reporting Language"
@@ -132,11 +132,12 @@ EOF
 
 src_install() {
 
-	insinto /usr/lib/perl5/${PV}/i686-linux/CORE/
-	doins ${WORKDIR}/libperl.so
-	dosym /usr/lib/perl5/${PV}/i686-linux/CORE/libperl.so /usr/lib/libperl.so
-	
     export PARCH=`grep myarchname config.sh | cut -f2 -d"'"`
+
+	insinto /usr/lib/perl5/${PV}/${PARCH}/CORE/
+	doins ${WORKDIR}/libperl.so
+	dosym /usr/lib/perl5/${PV}/${PARCH}/CORE/libperl.so /usr/lib/libperl.so
+	
 
     make -f Makefile INSTALLMAN1DIR=${D}/usr/share/man/man1 INSTALLMAN3DIR=${D}/usr/share/man/man3 install || die
     install -m 755 utils/pl2pm ${D}/usr/bin/pl2pm
