@@ -1,8 +1,7 @@
-# Copyright 1999-2000 Gentoo Technologies, Inc.
+# Copyright 1999-2002 Gentoo Technologies, Inc.
 # Distributed under the terms of the GNU General Public License, v2 or later
 # Author Daniel Robbins <drobbins@gentoo.org>
-# $Header: /var/cvsroot/gentoo-x86/sys-devel/perl/perl-5.6.1-r1.ebuild,v 1.3 2001/09/15 19:28:01 drobbins Exp $
-
+# $Header: /var/cvsroot/gentoo-x86/sys-devel/perl/perl-5.6.1-r2.ebuild,v 1.1 2002/01/31 01:46:35 gbevin Exp $
 
 S=${WORKDIR}/${P}
 DESCRIPTION="Larry Wall's Practical Extraction and Reporting Language"
@@ -14,6 +13,7 @@ DEPEND="virtual/glibc sys-apps/groff berkdb? ( >=sys-libs/db-3.2.3h-r3 =sys-libs
 RDEPEND="virtual/glibc berkdb? ( >=sys-libs/db-3.2.3h-r3 =sys-libs/db-1.85-r1 ) gdbm? ( >=sys-libs/gdbm-1.8.0 )"
 
 src_compile() {
+
 # this is gross -- from Christian Gafton, Red Hat
 	cat > config.over <<EOF
 installprefix=${D}/usr
@@ -46,30 +46,56 @@ EOF
     else
       myconf="${myconf} -Ui_db -Ui_ndbm"
     fi
-    sh Configure -des -Dprefix=/usr -Dd_dosuid -Dd_semctl_semun ${myconf} -Duselargefiles -Darchname=${CHOST%%-*}-linux
 
-    #Optimize ;)
-    cp config.sh config.sh.orig
-    sed -e "s/optimize='-O2'/optimize=\'${CFLAGS}\'/" config.sh.orig > config.sh
-    #THIS IS USED LATER:
+	# configure for libperl.so
+    sh Configure -des \
+		-Darchname=${CHOST%%-*}-linux \
+		-Dcccdlflags='-fPIC' \
+		-Dccdlflags='-rdynamic' \
+		-Dprefix=/usr \
+		-Doptimize="${CFLAGS}" \
+		-Duselargefiles \
+		-Duseshrplib \
+		-Dlibperl=libperl.so \
+		-Dd_dosuid \
+		-Dd_semctl_semun \
+		${myconf} || die
+	mv -f Makefile Makefile_orig
+	sed -e 's#^CCDLFLAGS = -rdynamic -Wl,-rpath,/usr/lib/perl5/.*#CCDLFLAGS = -rdynamic#' \
+		Makefile_orig > Makefile
     export PARCH=`grep myarchname config.sh | cut -f2 -d"'"`
+	make libperl.so || die
+	mv libperl.so ${WORKDIR}
 
-# Umm, for some reason this doesn't want to work, so we'll just remove
-#  the makefiles and let make rebuild them itself. (It seems to do it
-#  right the second time... -- pete
-#    cp makefile makefile.orig
-#    sed -e "s:^0::" makefile.orig > makefile
-    
+	# configure for libperl.a
+	make distclean	
+    sh Configure -des \
+		-Darchname=${CHOST%%-*}-linux \
+		-Dcccdlflags='-fPIC' \
+		-Dccdlflags='-rdynamic' \
+		-Dprefix=/usr \
+		-Doptimize="${CFLAGS}" \
+		-Duselargefiles \
+		-Dd_dosuid \
+		-Dd_semctl_semun \
+		${myconf} || die
+	mv -f Makefile Makefile_orig
+	sed -e 's#^CCDLFLAGS = -rdynamic -Wl,-rpath,/usr/lib/perl5/.*#CCDLFLAGS = -rdynamic#' \
+		Makefile_orig > Makefile
+    export PARCH=`grep myarchname config.sh | cut -f2 -d"'"`
 	#for some reason, this rm -f doesn't seem to actually do anything.  So we explicitly use "Makefile"
 	#(rather than the default "makefile") in all make commands below.
 	rm -f makefile x2p/makefile
     make -f Makefile || die
-    # Parallel make fails
-    make -f Makefile test 
+
+    make -f Makefile test || die
 }
 
 src_install() {
 
+	insinto /usr/lib/perl5/${PV}/i686-linux/CORE/
+	doins ${WORKDIR}/libperl.so 
+	
     export PARCH=`grep myarchname config.sh | cut -f2 -d"'"`
 
     make -f Makefile INSTALLMAN1DIR=${D}/usr/share/man/man1 INSTALLMAN3DIR=${D}/usr/share/man/man3 install || die
