@@ -34,6 +34,7 @@ src_compile() {
 		-Dcccdlflags='-fPIC' \
 		-Dccdlflags='-rdynamic' \
 		-Dprefix=/usr \
+		-Dlocincpth=' ' \
 		-Doptimize="${CFLAGS}" \
 		-Duselargefiles \
 		-Duseshrplib \
@@ -91,6 +92,7 @@ EOF
 		-Darchname=${CHOST%%-*}-linux \
 		-Duselargefiles \
 		-Dd_dosuid \
+		-Dlocincpth=' ' \
 		-Dd_semctl_semun \
 		${myconf} || die
 
