@@ -1,6 +1,6 @@
 # Copyright 1999-2002 Gentoo Technologies, Inc.
 # Distributed under the terms of the GNU General Public License, v2 or later
-# /space/gentoo/cvsroot/gentoo-x86/sys-devel/perl/perl-5.6.1-r3.ebuild,v 1.3 2002/04/29 20:53:42 sandymac Exp
+# /space/gentoo/cvsroot/gentoo-x86/sys-devel/perl/perl-5.8.0-r1.ebuild,v 1.3 2002/04/29 20:53:42 sandymac Exp
 
 S=${WORKDIR}/${P}
 DESCRIPTION="Larry Wall's Practical Extraction and Reporting Language"
