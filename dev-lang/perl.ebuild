@@ -1,6 +1,6 @@
 # Copyright 1999-2005 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-lang/perl/perl-5.8.5-r2.ebuild,v 1.7 2005/01/16 17:56:50 eradicator Exp $
+# $Header: /var/cvsroot/gentoo-x86/dev-lang/perl/perl-5.8.5-r3.ebuild,v 1.1 2005/01/26 17:11:49 mcummings Exp $
 
 inherit eutils flag-o-matic gcc
 
@@ -120,6 +120,10 @@ src_unpack() {
 	# 66360.
 
 	epatch ${FILESDIR}/${P}-tempfiles.patch
+
+	# An additional tempfile patch, bug 75696
+	epatch ${FILESDIR}/file_path_rmtree.patch
+
 }
 
 src_configure() {
@@ -358,7 +362,10 @@ pkg_postinst() {
 	if [ "${ROOT}" = "/" ]
 	then
 		ebegin "Converting C header files to the corresponding Perl format"
-		cd /usr/include; h2ph * sys/* arpa/* netinet/* bits/* security/* asm/*
+		cd /usr/include;
+		h2ph * sys/* arpa/* netinet/* bits/* security/* asm/* gnu/* linux/*
+		cd /usr/include/linux;
+		h2ph *
 	fi
 
 	eerror ""
@@ -368,7 +375,7 @@ pkg_postinst() {
 	eerror "you may need to recompile applications that"
 	eerror "were emerged against the old libperl.so"
 	eerror ""
-	eerror "${FILESDIR}/libperl_rebuilder "
+	eerror "${FILESDIR}/perl-cleaner "
 	eerror "is provided to assist with this. "
 	eerror "PLEASE DO NOT INTERRUPT THE RUNNING OF THIS SCRIPT."
 	eerror "Part of the rebuilding of applications compiled against "
