@@ -1,7 +1,7 @@
 # Copyright 1999-2000 Gentoo Technologies, Inc.
 # Distributed under the terms of the GNU General Public License, v2 or later
 # Author Daniel Robbins <drobbins@gentoo.org>
-# $Header: /var/cvsroot/gentoo-x86/sys-devel/perl/perl-5.6.0-r4.ebuild,v 1.2 2000/12/19 23:39:17 achim Exp $
+# $Header: /var/cvsroot/gentoo-x86/sys-devel/perl/perl-5.6.0-r5.ebuild,v 1.1 2001/01/15 22:52:38 achim Exp $
 
 P=perl-5.6.0
 A=${P}.tar.gz
@@ -31,7 +31,8 @@ EOF
 
 
     sh Configure -des -Dprefix=/usr -Dd_dosuid \
-	-Dd_semctl_semun -Di_db -Di_gdbm -Duselargefiles
+	-Dd_semctl_semun -Di_db -Di_gdbm -Duselargefiles \
+	-Darchname=${CHOST%%-*}-linux
 	#-Dusethreads -Duse505threads \
 
     #Optimize ;)
@@ -92,8 +93,8 @@ EOF
 
 
 # This removes ${D} from Config.pm
-  dosed /usr/lib/perl5/5.6.0/i686-linux/Config.pm 
-  dosed /usr/lib/perl5/5.6.0/i686-linux/.packlist 
+  dosed /usr/lib/perl5/5.6.0/${CHOST%%-*}-linux/Config.pm 
+  dosed /usr/lib/perl5/5.6.0/${CHOST%%-*}-linux/.packlist 
 
 # DOCUMENTATION
 
