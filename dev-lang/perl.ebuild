@@ -1,17 +1,20 @@
 # Copyright 1999-2003 Gentoo Technologies, Inc.
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-lang/perl/perl-5.6.1-r11.ebuild,v 1.6 2003/05/31 11:19:02 liquidx Exp $
+# $Header: /var/cvsroot/gentoo-x86/dev-lang/perl/perl-5.6.1-r12.ebuild,v 1.1 2003/06/02 07:33:46 rac Exp $
 
 IUSE="berkdb gdbm"
 
-S="${WORKDIR}/${P}"
 DESCRIPTION="Larry Wall's Practical Extraction and Reporting Language"
-SRC_URI="ftp://ftp.perl.org/pub/CPAN/src/${P}.tar.gz"
+MM_VERSION="6.05"
+SAFE_VERSION="2.09"
+SRC_URI="ftp://ftp.perl.org/pub/CPAN/src/${P}.tar.gz
+	ftp://ftp.perl.org/pub/CPAN/modules/by-module/ExtUtils/ExtUtils-MakeMaker-${MM_VERSION}.tar.gz
+	ftp://ftp.perl.org/pub/CPAN/modules/by-module/Safe/Safe-${SAFE_VERSION}.tar.gz"
 HOMEPAGE="http://www.perl.org"
 
 LICENSE="Artistic GPL-2"
 SLOT="0"
-KEYWORDS="~x86 ppc ~sparc ~alpha mips ~hppa"
+KEYWORDS="~x86 ~ppc ~sparc ~alpha ~mips ~hppa"
 
 RDEPEND="gdbm? ( >=sys-libs/gdbm-1.8.0 )
 	>=sys-libs/db-3.2.3h-r3
@@ -21,9 +24,25 @@ DEPEND="sys-apps/groff
 	>=sys-apps/portage-2.0.45-r5
 	${RDEPEND}"
 		
+src_unpack() {
+	unpack ${A}
 
-PDEPEND=">=dev-perl/ExtUtils-MakeMaker-6.05-r4
-	>=dev-perl/Safe-2.09"
+	# replace some modules with newer ones from CPAN.
+
+	einfo "Replacing core ExtUtils::MakeMaker with newer version ${MM_VERSION}"
+	chmod +w ${S}/lib/ExtUtils/*
+	cp -R ${WORKDIR}/ExtUtils-MakeMaker-${MM_VERSION}/lib/ExtUtils/* ${S}/lib/ExtUtils/
+	einfo "Replacing core Safe.pm with newer version ${SAFE_VERSION}"
+	chmod +w ${S}/ext/Opcode/Safe.pm
+	cp ${WORKDIR}/Safe-${SAFE_VERSION}/Safe.pm ${S}/ext/Opcode/
+
+	# when using a newish MakeMaker, we must make sure PERL_CORE is
+	# set to 1 when building extensions in the core.  failure to
+	# do so will result in things like DynaLoader.a languishing in
+	# blib directories, and not being useful.
+
+	sed -ie "s/INSTALLDIRS=perl/INSTALLDIRS=perl PERL_CORE=1/" ${S}/ext/util/make_ext
+}
 
 src_compile() {
 	use gdbm || use berkdb || die "You must have either gdbm or berkdb installed and in your use flags."
@@ -96,7 +115,7 @@ src_compile() {
 	# starting from scratch again
 	cd ${WORKDIR}
 	rm -rf ${S}
-	unpack ${A}
+	src_unpack
 	cd ${S}
 
 	# put in built-in removal patch
