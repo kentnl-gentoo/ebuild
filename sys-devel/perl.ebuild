@@ -1,6 +1,6 @@
 # Copyright 1999-2002 Gentoo Technologies, Inc.
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/sys-devel/perl/perl-5.8.0-r8.ebuild,v 1.7 2003/01/12 15:33:51 mcummings Exp $
+# $Header: /var/cvsroot/gentoo-x86/sys-devel/perl/perl-5.8.0-r9.ebuild,v 1.1 2003/01/16 01:38:31 mcummings Exp $
 
 # The basic theory based on comments from Daniel Robbins <drobbins@gentoo.org>.
 #
@@ -204,7 +204,7 @@ src_compile() {
 			-Dcc='gcc' \
 			-Dprefix='/usr' \
 			-Dvendorprefix='/usr' \
-			-Dsiteprefixx='/usr' \
+			-Dsiteprefix='/usr' \
 			-Dlocincpth=' ' \
 			-Doptimize="${CFLAGS}" \
 			-Duselargefiles \
@@ -221,15 +221,14 @@ src_compile() {
 		make -f Makefile ${LIBPERL} || die "Unable to make libperl.so" 
 		mv ${LIBPERL} ${WORKDIR}
 	else
-	
-		cat > config.over <<EOF
+cat > config.over <<EOF
 installprefix=${D}/usr
 installarchlib=\`echo \$installarchlib | sed "s!\$prefix!\$installprefix!"\`
 installbin=\`echo \$installbin | sed "s!\$prefix!\$installprefix!"\`
 installman1dir=\`echo \$installman1dir | sed "s!\$prefix!\$installprefix!"\`
 installman3dir=\`echo \$installman3dir | sed "s!\$prefix!\$installprefix!"\`
-installman1dir=`echo $installman1dir | sed "s!/share/share/!/share/!"`
-installman3dir=`echo $installman3dir | sed "s!/share/share/!/share/!"`
+installman1dir=\`echo \$installman1dir | sed "s!/share/share/!/share/!"\`
+installman3dir=\`echo \$installman3dir | sed "s!/share/share/!/share/!"\`
 installman1dir=\`echo \$installman1dir | sed "s!/usr/man/!/usr/share/man/!"\`
 installman3dir=\`echo \$installman3dir | sed "s!/usr/man/!/usr/share/man/!"\`
 man1ext=1
@@ -239,13 +238,13 @@ installscript=\`echo \$installscript | sed "s!\$prefix!\$installprefix!"\`
 installsitelib=\`echo \$installsitelib | sed "s!\$prefix!\$installprefix!"\`
 installsitearch=\`echo \$installsitearch | sed "s!\$prefix!\$installprefix!"\`
 EOF
-
+sleep 10
 		sh Configure -des \
 			-Darchname="${myarch}" \
 			-Dcc='gcc' \
 			-Dprefix='/usr' \
 			-Dvendorprefix='/usr' \
-			-Dsiteprefixx='/usr' \
+			-Dsiteprefix='/usr' \
 			-Dlocincpth=' ' \
 			-Doptimize="${CFLAGS}" \
 			-Duselargefiles \
