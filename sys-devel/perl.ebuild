@@ -1,11 +1,11 @@
 # Copyright 1999-2000 Gentoo Technologies, Inc.
 # Distributed under the terms of the GNU General Public License, v2 or later
 # Author Daniel Robbins <drobbins@gentoo.org>
-# $Header: /var/cvsroot/gentoo-x86/sys-devel/perl/perl-5.6.0-r6.ebuild,v 1.3 2001/04/09 05:38:55 achim Exp $
+# $Header: /var/cvsroot/gentoo-x86/sys-devel/perl/perl-5.6.1.ebuild,v 1.1 2001/04/16 16:37:35 achim Exp $
 
 
 A=${P}.tar.gz
-S=${WORKDIR}/perl-5.6.0
+S=${WORKDIR}/${P}
 DESCRIPTION="Larry Wall's Practical Extraction and Reporting Language"
 SRC_URI="ftp://ftp.perl.org/pub/perl/CPAN/src/${A}"
 HOMEPAGE="http://www.perl.org"
@@ -19,14 +19,18 @@ src_compile() {
 # this is gross -- from Christian Gafton, Red Hat
 cat > config.over <<EOF
 installprefix=${D}/usr
-test -d \$installprefix || mkdir \$installprefix
-test -d \$installprefix/bin || mkdir \$installprefix/bin
+#test -d \$installprefix || mkdir \$installprefix
+#test -d \$installprefix/bin || mkdir \$installprefix/bin
 installarchlib=\`echo \$installarchlib | sed "s!\$prefix!\$installprefix!"\`
 installbin=\`echo \$installbin | sed "s!\$prefix!\$installprefix!"\`
-installman1dir=\$installprefix/share/man/man1
-installman3dir=\$installprefix/share/man/man3
+#installman1dir=\$installprefix/share/man/man1
+#installman3dir=\$installprefix/share/man/man3
+installman1dir=\`echo \$installman1dir | sed "s!\$prefix!\$installprefix!"\`
+installman3dir=\`echo \$installman3dir | sed "s!\$prefix!\$installprefix!"\`
+installman1dir=\`echo \$installman1dir | sed "s!/man/!/share/man/!"\`
+installman3dir=\`echo \$installman3dir | sed "s!/man/!/share/man/!"\`
 man1ext=1
-man3ext=3pl
+man3ext=3pm
 installprivlib=\`echo \$installprivlib | sed "s!\$prefix!\$installprefix!"\`
 installscript=\`echo \$installscript | sed "s!\$prefix!\$installprefix!"\`
 installsitelib=\`echo \$installsitelib | sed "s!\$prefix!\$installprefix!"\`
@@ -43,6 +47,13 @@ EOF
       myconf="${myconf} -Di_db -Di_ndbm"
     else
       myconf="${myconf} -Ui_db -Ui_ndbm"
+    fi
+    if [ "`use perl`" ]
+    then
+      # We create a shared libperl only if the use variable perl
+      # is set, because using a shared lib leads to as significiant
+      # performance penalty
+      myconf="${myconf} -Duseshrplib"
     fi
     sh Configure -des -Dprefix=/usr -Dd_dosuid \
 	-Dd_semctl_semun ${myconf} -Duselargefiles \
@@ -101,8 +112,8 @@ EOF
 
 # This removes ${D} from Config.pm
 
-  dosed /usr/lib/perl5/5.6.0/${CHOST%%-*}-linux/Config.pm
-  dosed /usr/lib/perl5/5.6.0/${CHOST%%-*}-linux/.packlist
+  dosed /usr/lib/perl5/${PV}/${CHOST%%-*}-linux/Config.pm
+  dosed /usr/lib/perl5/${PV}/${CHOST%%-*}-linux/.packlist
 
 # DOCUMENTATION
 
