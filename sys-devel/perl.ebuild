@@ -1,7 +1,7 @@
 # Copyright 1999-2002 Gentoo Technologies, Inc.
 # Distributed under the terms of the GNU General Public License, v2 or later
 # Author Daniel Robbins <drobbins@gentoo.org>
-# $Header: /var/cvsroot/gentoo-x86/sys-devel/perl/perl-5.6.1-r3.ebuild,v 1.3 2002/04/29 20:53:42 sandymac Exp $
+# /space/gentoo/cvsroot/gentoo-x86/sys-devel/perl/perl-5.6.1-r3.ebuild,v 1.3 2002/04/29 20:53:42 sandymac Exp
 
 S=${WORKDIR}/${P}
 DESCRIPTION="Larry Wall's Practical Extraction and Reporting Language"
@@ -46,9 +46,15 @@ src_compile() {
 	# create libperl.so and move it out of the way
 	mv -f Makefile Makefile_orig
 	sed -e 's#^CCDLFLAGS = -rdynamic -Wl,-rpath,/usr/lib/perl5/.*#CCDLFLAGS = -rdynamic#' \
+	    -e 's#^all: $(FIRSTMAKEFILE) #all: README #' \
 		Makefile_orig > Makefile
     export PARCH=`grep myarchname config.sh | cut -f2 -d"'"`
-	make libperl.so || die
+	make -f Makefile depend || die
+	mv makefile makefile_orig
+	mv x2p/makefile x2p/makefile_orig
+        egrep -v "(<built-in>|<command line>)" makefile_orig >makefile
+        egrep -v "(<built-in>|<command line>)" x2p/makefile_orig >x2p/makefile
+	make -f Makefile libperl.so || die
 	mv libperl.so ${WORKDIR}
 
 	# starting from scratch again
@@ -98,10 +104,19 @@ EOF
 #  right the second time... -- pete
 #    cp makefile makefile.orig
 #    sed -e "s:^0::" makefile.orig > makefile
+
+	mv Makefile Makefile_orig
+	sed -e 's#^all: $(FIRSTMAKEFILE) #all: README #' \
+		Makefile_orig > Makefile
     
-	#for some reason, this rm -f doesn't seem to actually do anything.  So we explicitly use "Makefile"
-	#(rather than the default "makefile") in all make commands below.
-	rm -f makefile x2p/makefile
+    #for some reason, this rm -f doesn't seem to actually do anything. So we explicitly use "Makefile"
+    #(rather than the default "makefile") in all make commands below.
+    rm -f makefile x2p/makefile
+    make -f Makefile depend || die
+    mv makefile makefile_orig
+    mv x2p/makefile x2p/makefile_orig
+    egrep -v "(<built-in>|<command line>)" makefile_orig >makefile
+    egrep -v "(<built-in>|<command line>)" x2p/makefile_orig >x2p/makefile
     make -f Makefile || die
     # Parallel make fails
 	# dont use the || die since some tests fail on bootstrap
