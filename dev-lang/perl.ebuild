@@ -1,6 +1,6 @@
 # Copyright 1999-2003 Gentoo Technologies, Inc.
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-lang/perl/perl-5.8.1_rc1.ebuild,v 1.6 2003/07/18 22:02:29 rac Exp $
+# $Header: /var/cvsroot/gentoo-x86/dev-lang/perl/perl-5.8.1_rc2.ebuild,v 1.1 2003/07/23 21:41:12 rac Exp $
 
 inherit eutils flag-o-matic 
 
@@ -17,7 +17,7 @@ DESCRIPTION="Larry Wall's Practical Extraction and Reporting Language"
 SAFE_VERSION="2.09"
 MY_P="perl-`echo $PV | sed 's/_rc/-RC/'`"
 S="${WORKDIR}/${MY_P}"
-SRC_URI="http://www.cpan.org/authors/id/J/JH/JHI/${MY_P}.tgz"
+SRC_URI="http://www.cpan.org/authors/id/J/JH/JHI/${MY_P}.tar.gz"
 #ftp://ftp.perl.org/pub/CPAN/src/${MY_P}.tar.gz
 #ftp://ftp.perl.org/pub/CPAN/modules/by-module/DB_File/DB_File-${DB_FILE_VERSION}.tar.gz
 #ftp://ftp.perl.org/pub/CPAN/modules/by-module/Safe/Safe-${SAFE_VERSION}.tar.gz"
