@@ -1,6 +1,6 @@
 # Copyright 1999-2004 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-lang/perl/perl-5.8.4.ebuild,v 1.17 2004/07/29 20:17:52 gmsoft Exp $
+# $Header: /var/cvsroot/gentoo-x86/dev-lang/perl/perl-5.8.4-r1.ebuild,v 1.1 2004/07/29 23:22:34 rac Exp $
 
 inherit eutils flag-o-matic gcc
 
@@ -19,7 +19,7 @@ HOMEPAGE="http://www.perl.org/"
 LIBPERL="libperl.so.${PERLSLOT}.${SHORT_PV}"
 LICENSE="Artistic GPL-2"
 SLOT="0"
-KEYWORDS="x86 ~ppc sparc ~mips ~alpha ~arm hppa amd64 ~ia64 ~ppc64 s390"
+KEYWORDS="~x86 ~ppc ~sparc ~mips ~alpha ~arm ~hppa ~amd64 ~ia64 ~ppc64 ~s390"
 IUSE="berkdb doc gdbm threads uclibc"
 
 DEPEND="!uclibc? ( sys-apps/groff )
@@ -101,12 +101,15 @@ src_unpack() {
 	# rac 2004.06.09
 	cd ${S}; epatch ${FILESDIR}/${P}-noksh.patch
 
+	# see bug 52660
+	cd ${S}; epatch ${FILESDIR}/${P}-NDBM-GDBM-compat.patch
+
 	# uclibc support
 	epatch ${FILESDIR}/perl-5.8.2-uclibc.patch
 
 }
 
-src_compile() {
+src_configure() {
 	# Arm and -O do not mix :)
 	use arm && replace-flags -O? -O1
 	use ppc && replace-flags -O? -O1
@@ -128,28 +131,25 @@ src_compile() {
 		myarch="${CHOST%%-*}-linux"
 	fi
 
+	# allow either gdbm to provide ndbm (in <gdbm/ndbm.h>) or db1
+
+	myndbm='U'
+	mygdbm='U'
+	mydb='U'
+
 	if use gdbm
 	then
-		myconf="${myconf} -Di_gdbm"
+		mygdbm='D'
+		myndbm='D'
 	fi
 	if use berkdb
 	then
-		myconf="${myconf} -Di_db"
-
-		# ndbm.h is only provided by db1 (and perhaps by gdbm in
-		# error). an alternate approach here would be to check for the
-		# presence (or some string therein) of /usr/include/ndbm.h
-		# itself.
-
-		if has_version '=sys-libs/db-1*'
-		then
-			myconf="${myconf} -Di_ndbm"
-		else
-			myconf="${myconf} -Ui_ndbm"
-		fi
-	else
-		myconf="${myconf} -Ui_db -Ui_ndbm"
+		mydb='D'
+		has_version '=sys-libs/db-1*' && myndbm='D'
 	fi
+
+	myconf="${myconf} -${myndbm}i_ndbm -${mygdbm}i_gdbm -${mydb}i_db"
+
 	if use mips
 	then
 		# this is needed because gcc 3.3-compiled kernels will hang
@@ -189,17 +189,40 @@ src_compile() {
 		-Dd_dosuid \
 		-Dd_semctl_semun \
 		-Dscriptdir=/usr/bin \
+		-Dman1dir=/usr/share/man/man1 \
+		-Dman3dir=/usr/share/man/man3 \
+		-Dinstallman1dir=${D}/usr/share/man/man1 \
+		-Dinstallman3dir=${D}/usr/share/man/man3 \
+		-Dman1ext='1' \
 		-Dman3ext='3pm' \
 		-Dcf_by='Gentoo' \
 		-Ud_csh \
 		${myconf} || die "Unable to configure"
+}
 
-	MAKEOPTS="${MAKEOPTS} -j1" emake || die "Unable to make"
+src_compile() {
 
-	if ! hasq maketest $RESTRICT; then
-		use uclibc && export MAKEOPTS="${MAKEOPTS} -j1"
-		emake -i test CCDLFLAGS=
+	# would like to bracket this with a test for the existence of a
+	# dotfile, but can't clean it automatically now.
+
+	src_configure
+
+	emake -j1 || die "Unable to make"
+
+	# i want people to have to take actions to disable tests, because
+	# they reveal lots of important problems in clear ways.  if that
+	# happens, you can revisit this, but portage .51 will call
+	# src_test if FEATURES=maketest is enabled, and we'll call it here
+	# if it isn't.
+
+	if ! hasq maketest $FEATURES; then
+		src_test
 	fi
+}
+
+src_test() {
+	use uclibc && export MAKEOPTS="${MAKEOPTS} -j1"
+	emake -i test CCDLFLAGS= || die "test failed"
 }
 
 src_install() {
@@ -217,10 +240,22 @@ src_install() {
 	# Fix for "stupid" modules and programs
 	dodir /usr/lib/perl5/site_perl/${PV}/${myarch}${mythreading}
 
-	make DESTDIR="${D}" \
-		INSTALLMAN1DIR="${D}/usr/share/man/man1" \
-		INSTALLMAN3DIR="${D}/usr/share/man/man3" \
-		install || die "Unable to make install"
+	make DESTDIR="${D}" install || die "Unable to make install"
+
+	# 2004.07.28 rac
+
+	# suidperl has had a history of security trouble, and the
+	# perldelta has recommended against using it for a while.  genone
+	# alerted me to the fact that the hardlinks aren't carrying
+	# through the staging directory, and we end up with four copies of
+	# perl, basically.  two normal, two suid.  fix this up here, and
+	# delete suidperl entirely.  if this causes outrage, here's where
+	# to fix.
+
+	rm ${D}/usr/bin/sperl${PV}
+	rm ${D}/usr/bin/suidperl
+	rm ${D}/usr/bin/perl
+	ln -s perl${PV} ${D}/usr/bin/perl
 
 	cp -f utils/h2ph utils/h2ph_patched
 	epatch ${FILESDIR}/perl-5.8.0-RC2-special-h2ph-not-failing-on-machine_ansi_header.patch
@@ -250,13 +285,6 @@ EOF
 	fperms 0444 /usr/lib/perl5/${PV}/ExtUtils/xsubpp
 	dosed 's:./miniperl:/usr/bin/perl:' /usr/bin/xsubpp
 	fperms 0755 /usr/bin/xsubpp
-
-	if ! hasq noman $FEATURES; then
-		# executing a binary we just built is not very cross
-		# compiler friendly.
-		./perl installman \
-			--destdir="${D}" --man1ext='1' --man3ext='3'
-	fi
 
 	# This removes ${D} from Config.pm and .packlist
 	for i in `find ${D} -iname "Config.pm"` `find ${D} -iname ".packlist"`;do
