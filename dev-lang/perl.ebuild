@@ -1,6 +1,6 @@
 # Copyright 1999-2003 Gentoo Technologies, Inc.
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-lang/perl/perl-5.8.2.ebuild,v 1.3 2003/11/26 22:16:43 rac Exp $
+# $Header: /var/cvsroot/gentoo-x86/dev-lang/perl/perl-5.8.2-r1.ebuild,v 1.1 2003/11/29 22:13:07 rac Exp $
 
 inherit eutils flag-o-matic
 
@@ -93,6 +93,13 @@ src_unpack() {
 	# that are in the core, by rearranging the @INC directory to look
 	# site -> vendor -> core.
 	cd ${S}; epatch ${FILESDIR}/${P}-reorder-INC.patch
+
+	# some well-intentioned stuff in http://groups.google.com/groups?hl=en&lr=&ie=UTF-8&selm=Pine.SOL.4.10.10205231231200.5399-100000%40maxwell.phys.lafayette.edu
+	# attempts to avoid bringing cccdlflags to bear on static
+	# extensions (like DynaLoader).  i believe this is
+	# counterproductive on a Gentoo system which has both a shared
+	# and static libperl, so effectively revert this here.
+	cd ${S}; epatch ${FILESDIR}/${P}-picdl.patch
 }
 
 src_compile() {
@@ -159,10 +166,12 @@ src_compile() {
 	# must be compiled with -fPIC.  Don't have time to parse through the build system
 	# at this time.
 	[ "${ARCH}" = "hppa" ] && append-flags -fPIC
-	[ "${ARCH}" = "amd64" ] && append-flags -fPIC
+#	[ "${ARCH}" = "amd64" ] && append-flags -fPIC
 
 	sh Configure -des \
 		-Darchname="${myarch}" \
+		-Dcccdlflags='-fPIC' \
+		-Dccdlflags='-rdynamic' \
 		-Dcc="${CC:-gcc}" \
 		-Dprefix='/usr' \
 		-Dvendorprefix='/usr' \
