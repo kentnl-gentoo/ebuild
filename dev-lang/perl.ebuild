@@ -1,6 +1,6 @@
 # Copyright 1999-2004 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
-# $Header: /var/cvsroot/gentoo-x86/dev-lang/perl/perl-5.8.5.ebuild,v 1.11 2004/11/12 15:18:32 vapier Exp $
+# $Header: /var/cvsroot/gentoo-x86/dev-lang/perl/perl-5.8.5-r1.ebuild,v 1.1 2004/11/13 01:04:02 rac Exp $
 
 inherit eutils flag-o-matic gcc
 
@@ -19,6 +19,7 @@ LICENSE="Artistic GPL-2"
 SLOT="0"
 KEYWORDS="~x86 ~ppc ~sparc ~mips ~alpha ~arm ~hppa ~amd64 ~ia64 ~ppc64 ~s390 ~sh"
 IUSE="berkdb debug doc gdbm ithreads perlsuid uclibc"
+PERL_OLDVERSEN="5.8.2 5.8.4"
 
 DEPEND="!uclibc? ( sys-apps/groff )
 	berkdb? ( sys-libs/db )
@@ -113,6 +114,15 @@ src_unpack() {
 }
 
 src_configure() {
+
+	# this attempts to mimic (and the code is directly derived from)
+	# Configure's attempt to guess archname.  it will be appended to
+	# the old versions to search.
+
+	local perlarch=$(echo $(arch)-$(uname | sed -e 's/^[^=]*=//' -e 's/\///g' \
+		| tr '[A-Z]' '[a-z]'))
+	local inclist=$(for v in $PERL_OLDVERSEN; do echo -n "$v $v/$perlarch "; done)
+
 	# some arches and -O do not mix :)
 	use arm && replace-flags -O? -O1
 	use ppc && replace-flags -O? -O1
@@ -205,6 +215,7 @@ src_configure() {
 		-Dinstallman3dir=${D}/usr/share/man/man3 \
 		-Dman1ext='1' \
 		-Dman3ext='3pm' \
+		-Dinc_version_list="$inclist" \
 		-Dcf_by='Gentoo' \
 		-Ud_csh \
 		${myconf} || die "Unable to configure"
@@ -218,16 +229,6 @@ src_compile() {
 	src_configure
 
 	emake -j1 || die "Unable to make"
-
-	# i want people to have to take actions to disable tests, because
-	# they reveal lots of important problems in clear ways.  if that
-	# happens, you can revisit this, but portage .51 will call
-	# src_test if FEATURES=maketest is enabled, and we'll call it here
-	# if it isn't.
-
-	if ! hasq maketest $FEATURES; then
-		src_test
-	fi
 }
 
 src_test() {
